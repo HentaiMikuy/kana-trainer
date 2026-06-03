@@ -22,6 +22,26 @@ class FakeElement {
     this.children = [];
     this.clickCount = 0;
     this.closestSelector = null;
+    this.focusCount = 0;
+    this.classes = new Set(["hidden"]);
+    this.classList = {
+      add: (...classNames) => {
+        classNames.forEach((className) => this.classes.add(className));
+      },
+      remove: (...classNames) => {
+        classNames.forEach((className) => this.classes.delete(className));
+      },
+      contains: (className) => this.classes.has(className),
+      toggle: (className, force) => {
+        const shouldAdd = force ?? !this.classes.has(className);
+        if (shouldAdd) {
+          this.classes.add(className);
+        } else {
+          this.classes.delete(className);
+        }
+        return shouldAdd;
+      },
+    };
   }
 
   addEventListener(type, listener) {
@@ -31,6 +51,10 @@ class FakeElement {
   click() {
     this.clickCount += 1;
     this.eventListeners.get("click")?.({ target: this });
+  }
+
+  focus() {
+    this.focusCount += 1;
   }
 
   closest(selector) {
@@ -50,11 +74,14 @@ function createElements() {
     directionSelect: new FakeElement(),
     exportDataButton: new FakeElement(),
     glyphButtons: [new FakeElement({ glyph: "print" }), new FakeElement({ glyph: "hand" })],
+    closeHelpButton: new FakeElement(),
+    helpDialog: new FakeElement(),
     importDataButton: new FakeElement(),
     importDataInput: new FakeElement(),
     modeButtons: [new FakeElement({ mode: "katakana" }), new FakeElement({ mode: "hiragana" })],
     newQuizButton: new FakeElement(),
     nextButton: new FakeElement(),
+    openHelpButton: new FakeElement(),
     optionsGrid: new FakeElement(),
     practiceTypeButtons: [new FakeElement({ practiceType: "normal" }), new FakeElement({ practiceType: "confusing" })],
     pronunciationButtons: [new FakeElement({ pronunciation: "manual" }), new FakeElement({ pronunciation: "auto" })],
@@ -66,6 +93,8 @@ function createElements() {
     speakButton: new FakeElement(),
     submitInputButton: new FakeElement(),
     toggleChartButton: new FakeElement(),
+    toggleChartPrivacyButton: new FakeElement(),
+    toggleWeakPrivacyButton: new FakeElement(),
   };
 }
 
@@ -82,8 +111,10 @@ function createCallbacks(log) {
     "onExportData",
     "onGlyphChange",
     "onImportDataFile",
+    "onCloseHelp",
     "onModeChange",
     "onNextQuestion",
+    "onOpenHelp",
     "onPracticeTypeChange",
     "onPronunciationChange",
     "onQuestionLimitChange",
@@ -95,6 +126,8 @@ function createCallbacks(log) {
     "onSpeak",
     "onSubmitInputAnswer",
     "onToggleChart",
+    "onToggleChartPrivacy",
+    "onToggleWeakPrivacy",
   ];
 
   return Object.fromEntries(
@@ -212,7 +245,11 @@ test("binds action buttons and import file delegation", () => {
   elements.importDataButton.click();
   elements.importDataInput.files = [file];
   trigger(elements.importDataInput, "change");
+  elements.openHelpButton.click();
+  elements.closeHelpButton.click();
   elements.toggleChartButton.click();
+  elements.toggleWeakPrivacyButton.click();
+  elements.toggleChartPrivacyButton.click();
 
   assert.equal(elements.importDataInput.clickCount, 1);
   assert.deepEqual(log, [
@@ -226,7 +263,40 @@ test("binds action buttons and import file delegation", () => {
     ["onClearRecords"],
     ["onExportData"],
     ["onImportDataFile", file],
+    ["onOpenHelp"],
+    ["onCloseHelp"],
     ["onToggleChart"],
+    ["onToggleWeakPrivacy"],
+    ["onToggleChartPrivacy"],
+  ]);
+});
+
+test("closes help dialog from backdrop and escape key", () => {
+  const elements = createElements();
+  const root = createRoot();
+  const log = [];
+
+  appEvents.bindAppEvents({
+    callbacks: createCallbacks(log),
+    elements,
+    getState: () => ({ answerMode: "choice", selectedAnswer: false }),
+    root,
+  });
+
+  elements.helpDialog.classList.remove("hidden");
+  trigger(elements.helpDialog, "click", { target: elements.helpDialog });
+
+  elements.helpDialog.classList.remove("hidden");
+  const escapeEvent = createKeyEvent("Escape", elements.answerInput);
+  root.eventListeners.get("keydown")(escapeEvent);
+
+  elements.helpDialog.classList.remove("hidden");
+  trigger(elements.helpDialog, "click", { target: new FakeElement() });
+
+  assert.equal(escapeEvent.preventDefaultCount, 1);
+  assert.deepEqual(log, [
+    ["onCloseHelp"],
+    ["onCloseHelp"],
   ]);
 });
 
@@ -308,4 +378,3 @@ test("blocks keyboard shortcuts inside non-answer controls", () => {
     false,
   );
 });
-

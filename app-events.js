@@ -97,6 +97,14 @@
     bindAction(elements.reviewMistakesButton, "click", callbacks.onReviewMistakes);
     bindAction(elements.clearRecordsButton, "click", callbacks.onClearRecords);
     bindAction(elements.exportDataButton, "click", callbacks.onExportData);
+    bindAction(elements.openHelpButton, "click", callbacks.onOpenHelp);
+    bindAction(elements.closeHelpButton, "click", callbacks.onCloseHelp);
+
+    elements.helpDialog.addEventListener("click", (event) => {
+      if (event.target === elements.helpDialog) {
+        callbacks.onCloseHelp();
+      }
+    });
 
     elements.importDataButton.addEventListener("click", () => {
       elements.importDataInput.click();
@@ -107,8 +115,16 @@
     });
 
     bindAction(elements.toggleChartButton, "click", callbacks.onToggleChart);
+    bindAction(elements.toggleWeakPrivacyButton, "click", callbacks.onToggleWeakPrivacy);
+    bindAction(elements.toggleChartPrivacyButton, "click", callbacks.onToggleChartPrivacy);
 
     targetRoot.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !elements.helpDialog.classList.contains("hidden")) {
+        event.preventDefault();
+        callbacks.onCloseHelp();
+        return;
+      }
+
       if (
         isKeyboardShortcutBlocked(event.target, {
           answerInput: elements.answerInput,

@@ -13,7 +13,7 @@
 - 学习记录：通过 `localStorage` 保存每个假名的练习次数、正确次数、错误次数、连续掌握次数和最近练习时间。
 - 智能复习：普通练习会根据历史错题、掌握连续次数和久未练习时间进行加权抽样。
 - 复盘反馈：顶部实时统计、完成页学习报告、长期薄弱项列表和带掌握状态的五十音速查表。
-- 辅助体验：限时挑战、平均用时统计、手动/自动发音、印刷体/手写体切换、移动端操作区优化。
+- 辅助体验：页面说明弹窗、限时挑战、平均用时统计、手动/自动发音、印刷体/手写体切换、速查/错题遮挡和移动端操作区优化。
 
 项目目前是单页静态应用，运行时仍不需要构建流程。纯题库和基础记录规则集中在 `kana-core.js`，学习记录存储、导出 payload、导入合并和练习结果写入集中在 `learning-records.js`，出题队列和选项生成逻辑集中在 `quiz-engine.js`，完成页、错题列表、反馈和速查表渲染集中在 `ui-renderers.js`，发音能力集中在 `speech.js`，限时挑战集中在 `challenge-timer.js`，设置区控件同步集中在 `settings-controls.js`，题目区 DOM 渲染集中在 `question-view.js`，按钮和键盘事件绑定集中在 `app-events.js`，学习数据导出下载、导入文件解析和清空确认集中在 `learning-data-actions.js`，练习会话统计、进度和错题复习题量计算集中在 `practice-session.js`，练习标签、练习池、易混淆干扰项、选项和队列规划集中在 `practice-planner.js`，`app.js` 负责页面状态和跨模块流程编排。核心规则使用 Node 原生断言测试覆盖，不依赖第三方测试框架。
 
@@ -42,12 +42,15 @@
 - 内置五十音速查表，按清音、浊音、半浊音、拗音分区展示。
 - 速查表会根据本地记录显示「新」「练」「弱」「稳」掌握状态。
 - 支持点击速查表单元格播放发音。
+- 支持对「五十音速查」和「容易忘的假名」内容执行「遮挡 / 显示」切换，答题时可通过模糊内容避免提前看到答案。
+- 顶部标题右侧提供「?」页面说明按钮，弹窗介绍页面区域和主要功能。
 - 支持浏览器语音合成，可手动播放或答题后自动播放日语发音。
 - 支持印刷体和手写体字形显示切换。
 - 支持键盘操作：
   - 选择题模式下按数字键 `1` 到 `8` 选择答案。
   - 输入模式下按 `Enter` 提交。
   - 答题完成后按 `Enter` 进入下一题或查看结果。
+  - 页面说明弹窗打开时可按 `Esc` 关闭。
 
 ## 使用方式
 
@@ -128,8 +131,10 @@ node --check tests/practice-planner.test.js
 6. 点击「开始新一轮」生成练习。
 7. 答题后可查看反馈，点击「下一题」继续。
 8. 练习结束后在学习报告中查看错题、薄弱行，并选择下一步复习入口。
-9. 可通过「导出」「导入」迁移当前浏览器里的学习记录。
-10. 如需重置长期记录，点击「清空记录」删除当前浏览器保存的数据。
+9. 答题时如果不希望看到提示，可点击「五十音速查」或「容易忘的假名」中的「遮挡」按钮模糊对应内容，再点击「显示」恢复。
+10. 可点击标题右侧的「?」查看页面说明，说明弹窗支持关闭按钮、点击遮罩和 `Esc` 关闭。
+11. 可通过「导出」「导入」迁移当前浏览器里的学习记录。
+12. 如需重置长期记录，点击「清空记录」删除当前浏览器保存的数据。
 
 ## 文件结构
 
@@ -171,11 +176,12 @@ node --check tests/practice-planner.test.js
 
 ### 页面结构
 
-`index.html` 是应用唯一入口，主要分为三块：
+`index.html` 是应用唯一入口，主要分为四块：
 
-- 顶部统计区：展示已答题数、正确率、连对数和平均用时。
+- 顶部标题和统计区：展示页面标题、页面说明入口、已答题数、正确率、连对数和平均用时。
 - 左侧设置区：控制练习模式、题量、范围、限时、导入导出等。
-- 右侧练习区：展示题目、选项或输入框、反馈、完成页报告、长期错题和速查表。
+- 右侧练习区：第一行左侧展示答题卡，右侧展示五十音速查；第二行横向展示长期错题和薄弱项。
+- 页面说明弹窗：标题右侧「?」按钮打开，用于介绍页面区域和主要功能。
 
 页面会依次加载 `kana-core.js`、`learning-records.js`、`quiz-engine.js`、`ui-renderers.js`、`speech.js`、`challenge-timer.js`、`settings-controls.js`、`question-view.js`、`app-events.js`、`learning-data-actions.js`、`practice-session.js`、`practice-planner.js` 和 `app.js`。页面通过原生 DOM 节点 ID 与 `app.js` 绑定，没有使用框架。
 
@@ -185,7 +191,10 @@ node --check tests/practice-planner.test.js
 
 - 使用 CSS 变量维护背景、文本、强调色、正确/错误状态和假名字体。
 - 通过 `:root[data-glyph="hand"]` 切换手写体字体栈。
-- 使用 CSS Grid 和 Flex 实现设置面板、题卡、统计条、速查表和移动端布局。
+- 使用 CSS Grid 和 Flex 实现设置面板、题卡、统计条、速查表、长期错题区和移动端布局。
+- 桌面端练习区采用答题卡与五十音速查并排、容易忘的假名横向铺满的布局；窄屏下恢复单列布局。
+- 通过 `.privacy-blurred` 为速查表和容易忘的假名提供柔和模糊遮挡效果，并禁用遮挡内容的点击交互。
+- 通过 `.modal-backdrop`、`.modal-panel`、`.help-grid` 实现页面说明弹窗和移动端单列说明布局。
 - 小屏幕下将答题操作区设置为 sticky，方便移动端连续答题。
 
 ### 应用状态
@@ -263,8 +272,9 @@ node --check tests/practice-planner.test.js
 `app-events.js` 是浏览器事件绑定模块，负责：
 
 - 设置区按钮、滑块、开关和选择框事件绑定。
-- 题目操作按钮、数据导入导出按钮和速查表切换按钮事件绑定。
-- 输入模式 `Enter`、选择题数字键和答题后 `Enter` 的键盘快捷键分发。
+- 题目操作按钮、数据导入导出按钮、速查表切换按钮和遮挡按钮事件绑定。
+- 页面说明弹窗的打开、关闭、遮罩点击关闭和 `Esc` 关闭事件绑定。
+- 输入模式 `Enter`、选择题数字键、答题后 `Enter` 和弹窗 `Esc` 的键盘快捷键分发。
 - 屏蔽输入控件、按钮、下拉框和可编辑元素内的全局快捷键。
 
 `learning-data-actions.js` 是浏览器学习数据动作模块，负责：
@@ -288,7 +298,7 @@ node --check tests/practice-planner.test.js
 - 为易混淆专项生成优先干扰项。
 - 将当前会话上下文传给题目、选项和队列生成逻辑。
 
-`tests/kana-core.test.js`、`tests/learning-records.test.js`、`tests/quiz-engine.test.js`、`tests/ui-renderers.test.js`、`tests/speech.test.js`、`tests/challenge-timer.test.js`、`tests/settings-controls.test.js`、`tests/question-view.test.js`、`tests/app-events.test.js`、`tests/learning-data-actions.test.js`、`tests/practice-session.test.js` 和 `tests/practice-planner.test.js` 直接引用这些模块，覆盖题库数量、答案兼容、导入规范化、长期错题退出规则、复习权重、易混淆池、学习记录存储降级、练习池、题目生成、选项生成、队列长度、基础 DOM 渲染、发音参数、限时倒计时、设置控件同步、题目区渲染、事件绑定、学习数据下载、导入状态、确认分支、会话统计、复习题量和练习规划上下文等核心行为。
+`tests/kana-core.test.js`、`tests/learning-records.test.js`、`tests/quiz-engine.test.js`、`tests/ui-renderers.test.js`、`tests/speech.test.js`、`tests/challenge-timer.test.js`、`tests/settings-controls.test.js`、`tests/question-view.test.js`、`tests/app-events.test.js`、`tests/learning-data-actions.test.js`、`tests/practice-session.test.js` 和 `tests/practice-planner.test.js` 直接引用这些模块，覆盖题库数量、答案兼容、导入规范化、长期错题退出规则、复习权重、易混淆池、学习记录存储降级、练习池、题目生成、选项生成、队列长度、基础 DOM 渲染、发音参数、限时倒计时、设置控件同步、题目区渲染、按钮事件绑定、页面说明弹窗关闭路径、学习数据下载、导入状态、确认分支、会话统计、复习题量和练习规划上下文等核心行为。
 
 ### 出题流程
 

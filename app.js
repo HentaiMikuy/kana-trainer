@@ -160,6 +160,10 @@ const elements = {
   resultReport: document.querySelector("#resultReport"),
   feedback: document.querySelector("#feedback"),
   actionRow: document.querySelector(".action-row"),
+  openHelpButton: document.querySelector("#openHelpButton"),
+  closeHelpButton: document.querySelector("#closeHelpButton"),
+  helpDialog: document.querySelector("#helpDialog"),
+  helpDialogPanel: document.querySelector("#helpDialogPanel"),
   speakButton: document.querySelector("#speakButton"),
   nextButton: document.querySelector("#nextButton"),
   revealButton: document.querySelector("#revealButton"),
@@ -190,9 +194,11 @@ const elements = {
   practiceTypeButtons: [...document.querySelectorAll("[data-practice-type]")],
   confusingSetButtons: [...document.querySelectorAll("[data-confusing-set]")],
   weakList: document.querySelector("#weakList"),
+  toggleWeakPrivacyButton: document.querySelector("#toggleWeakPrivacyButton"),
   reviewMistakesButton: document.querySelector("#reviewMistakesButton"),
   clearRecordsButton: document.querySelector("#clearRecordsButton"),
   kanaChart: document.querySelector("#kanaChart"),
+  toggleChartPrivacyButton: document.querySelector("#toggleChartPrivacyButton"),
   toggleChartButton: document.querySelector("#toggleChartButton"),
 };
 
@@ -641,6 +647,27 @@ function renderChart() {
   });
 }
 
+function togglePanelPrivacy(target, button) {
+  const isBlurred = !target.classList.contains("privacy-blurred");
+  target.classList.toggle("privacy-blurred", isBlurred);
+  target.inert = isBlurred;
+  target.setAttribute("aria-hidden", String(isBlurred));
+  button.textContent = isBlurred ? "显示" : "遮挡";
+  button.setAttribute("aria-pressed", String(isBlurred));
+}
+
+function openHelpDialog() {
+  elements.helpDialog.classList.remove("hidden");
+  elements.openHelpButton.setAttribute("aria-expanded", "true");
+  elements.helpDialogPanel.focus();
+}
+
+function closeHelpDialog() {
+  elements.helpDialog.classList.add("hidden");
+  elements.openHelpButton.setAttribute("aria-expanded", "false");
+  elements.openHelpButton.focus();
+}
+
 function resetRoundStats() {
   stopQuestionTimer();
   resetSessionRoundStats(state);
@@ -754,6 +781,14 @@ function bindEvents() {
       onClearRecords: clearLearningRecords,
       onExportData: exportLearningRecords,
       onImportDataFile: handleImportDataFile,
+      onOpenHelp: openHelpDialog,
+      onCloseHelp: closeHelpDialog,
+      onToggleWeakPrivacy() {
+        togglePanelPrivacy(elements.weakList, elements.toggleWeakPrivacyButton);
+      },
+      onToggleChartPrivacy() {
+        togglePanelPrivacy(elements.kanaChart, elements.toggleChartPrivacyButton);
+      },
       onToggleChart() {
         state.chartScript = state.chartScript === "katakana" ? "hiragana" : "katakana";
         renderChart();
