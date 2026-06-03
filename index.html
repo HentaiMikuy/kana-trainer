@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>五十音记忆测试</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace" aria-labelledby="page-title">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Kana Trainer</p>
+            <h1 id="page-title">五十音记忆测试</h1>
+          </div>
+          <div class="score-strip" aria-label="当前练习统计">
+            <div>
+              <span id="answeredCount">0</span>
+              <small>已答</small>
+            </div>
+            <div>
+              <span id="accuracyRate">0%</span>
+              <small>正确率</small>
+            </div>
+            <div>
+              <span id="streakCount">0</span>
+              <small>连对</small>
+            </div>
+            <div>
+              <span id="averageTimeCount">0.0s</span>
+              <small>平均用时</small>
+            </div>
+          </div>
+        </header>
+
+        <section class="quiz-layout">
+          <aside class="panel settings-panel" aria-label="练习设置">
+            <div class="panel-head">
+              <h2>练习设置</h2>
+              <button class="icon-button" id="resetButton" type="button" title="重置练习" aria-label="重置练习">
+                <span aria-hidden="true">↻</span>
+              </button>
+            </div>
+
+            <div class="control-group normal-scope-control">
+              <label>测试字符</label>
+              <div class="segmented" role="group" aria-label="测试字符">
+                <button class="segment active" type="button" data-mode="katakana">片假名</button>
+                <button class="segment" type="button" data-mode="hiragana">平假名</button>
+                <button class="segment" type="button" data-mode="mixed">混合</button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label>字形显示</label>
+              <div class="segmented glyph-segmented" role="group" aria-label="字形显示">
+                <button class="segment active" type="button" data-glyph="print">印刷体</button>
+                <button class="segment" type="button" data-glyph="hand">手写体</button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label>发音方式</label>
+              <div class="segmented pronunciation-segmented" role="group" aria-label="发音方式">
+                <button class="segment active" type="button" data-pronunciation="manual">手动</button>
+                <button class="segment" type="button" data-pronunciation="auto">自动</button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="directionSelect">测试方向</label>
+              <select id="directionSelect">
+                <option value="kana-to-romaji">假名 → 罗马音</option>
+                <option value="romaji-to-kana">罗马音 → 假名</option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <label>答题方式</label>
+              <div class="segmented answer-mode-segmented" role="group" aria-label="答题方式">
+                <button class="segment active" type="button" data-answer-mode="choice">选择</button>
+                <button class="segment" type="button" data-answer-mode="input">输入</button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label>练习类型</label>
+              <div class="segmented practice-type-segmented" role="group" aria-label="练习类型">
+                <button class="segment active" type="button" data-practice-type="normal">普通</button>
+                <button class="segment" type="button" data-practice-type="confusing">易混淆</button>
+              </div>
+            </div>
+
+            <div class="switch-row">
+              <label for="challengeToggle">
+                <span>限时挑战</span>
+                <small>超时自动判错并记录平均用时</small>
+              </label>
+              <input id="challengeToggle" type="checkbox" />
+            </div>
+
+            <div class="control-group hidden" id="challengeControl">
+              <label for="challengeLimit">每题限时</label>
+              <input id="challengeLimit" type="range" min="5" max="30" step="5" value="15" />
+              <div class="range-row">
+                <span>5 秒</span>
+                <strong><span id="challengeLimitValue">15</span> 秒</strong>
+                <span>30 秒</span>
+              </div>
+            </div>
+
+            <div class="control-group confusing-control hidden" id="confusingControl">
+              <label>专项分组</label>
+              <div class="confusing-picker" aria-label="易混淆专项分组">
+                <button class="confusing-chip active" type="button" data-confusing-set="all">全部</button>
+                <button class="confusing-chip kana-text" type="button" data-confusing-set="shi-tsu">
+                  シ / ツ
+                </button>
+                <button class="confusing-chip kana-text" type="button" data-confusing-set="so-n">
+                  ソ / ン
+                </button>
+                <button class="confusing-chip kana-text" type="button" data-confusing-set="no-me">
+                  ノ / メ
+                </button>
+                <button class="confusing-chip kana-text" type="button" data-confusing-set="nu-me">
+                  ぬ / め
+                </button>
+                <button class="confusing-chip kana-text" type="button" data-confusing-set="sa-chi">
+                  さ / ち
+                </button>
+                <button class="confusing-chip kana-text" type="button" data-confusing-set="re-wa-ne">
+                  れ / わ / ね
+                </button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <label for="questionLimit">题量</label>
+              <input id="questionLimit" type="range" min="10" max="50" step="5" value="20" />
+              <div class="range-row">
+                <span>10</span>
+                <strong><span id="questionLimitValue">20</span> 题</strong>
+                <span>50</span>
+              </div>
+            </div>
+
+            <div class="control-group normal-scope-control">
+              <label>练习范围</label>
+              <div class="row-picker" id="rowPicker" aria-label="练习范围"></div>
+            </div>
+
+            <div class="switch-row normal-scope-control">
+              <label for="dakutenToggle">
+                <span>包含浊音 / 半浊音</span>
+                <small>ガ、ザ、パ 等</small>
+              </label>
+              <input id="dakutenToggle" type="checkbox" checked />
+            </div>
+
+            <div class="switch-row normal-scope-control">
+              <label for="smallKanaToggle">
+                <span>包含拗音</span>
+                <small>キャ、ショ、ピョ 等</small>
+              </label>
+              <input id="smallKanaToggle" type="checkbox" />
+            </div>
+
+            <div class="control-group data-tools-group">
+              <label>学习数据</label>
+              <div class="data-tools">
+                <button class="ghost-button data-tool-button" id="exportDataButton" type="button">
+                  导出
+                </button>
+                <button class="ghost-button data-tool-button" id="importDataButton" type="button">
+                  导入
+                </button>
+                <input
+                  id="importDataInput"
+                  type="file"
+                  accept="application/json"
+                  class="hidden"
+                />
+              </div>
+              <small class="data-tools-hint">导出为 JSON，导入会合并并覆盖同一假名的历史记录。</small>
+            </div>
+
+            <button class="primary-button" id="newQuizButton" type="button">开始新一轮</button>
+          </aside>
+
+          <section class="practice-panel" aria-label="当前题目">
+            <div class="question-card">
+              <div class="progress-line" aria-hidden="true">
+                <span id="progressBar"></span>
+              </div>
+              <div class="question-meta">
+                <span id="quizModeLabel">片假名</span>
+                <span id="questionCounter">第 1 / 20 题</span>
+              </div>
+              <div class="timer-strip hidden" id="timerStrip" aria-live="polite">
+                <div class="timer-head">
+                  <span>剩余时间</span>
+                  <strong id="timerRemaining">15.0s</strong>
+                </div>
+                <div class="timer-line" aria-hidden="true">
+                  <span id="timerBar"></span>
+                </div>
+              </div>
+              <div class="prompt-wrap">
+                <div class="prompt" id="promptText">ア</div>
+                <div class="prompt-sub" id="promptSub">选择对应的罗马音</div>
+              </div>
+              <div class="options-grid" id="optionsGrid" aria-label="答案选项"></div>
+              <div class="input-answer hidden" id="inputAnswerArea">
+                <input id="answerInput" type="text" autocomplete="off" spellcheck="false" />
+                <button class="next-button" id="submitInputButton" type="button">提交</button>
+              </div>
+              <div class="result-report hidden" id="resultReport" aria-live="polite"></div>
+              <div class="feedback" id="feedback" aria-live="polite"></div>
+              <div class="action-row" id="questionActionRow">
+                <button class="ghost-button speak-button" id="speakButton" type="button">发音</button>
+                <button class="ghost-button" id="revealButton" type="button">看答案</button>
+                <button class="next-button" id="nextButton" type="button" disabled>下一题</button>
+              </div>
+            </div>
+
+            <div class="mini-panels">
+              <section class="compact-panel" aria-labelledby="weak-title">
+                <div class="compact-title">
+                  <h2 id="weak-title">容易忘的假名</h2>
+                  <div class="compact-actions">
+                    <button class="text-button" id="reviewMistakesButton" type="button">只练错题</button>
+                    <button class="text-button" id="clearRecordsButton" type="button">清空记录</button>
+                  </div>
+                </div>
+                <div class="weak-list" id="weakList"></div>
+              </section>
+              <section class="compact-panel" aria-labelledby="chart-title">
+                <div class="compact-title">
+                  <h2 id="chart-title">五十音速查</h2>
+                  <button class="text-button" id="toggleChartButton" type="button">片假名</button>
+                </div>
+                <div class="kana-chart" id="kanaChart"></div>
+              </section>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="kana-core.js"></script>
+    <script src="learning-records.js"></script>
+    <script src="quiz-engine.js"></script>
+    <script src="ui-renderers.js"></script>
+    <script src="speech.js"></script>
+    <script src="challenge-timer.js"></script>
+    <script src="settings-controls.js"></script>
+    <script src="question-view.js"></script>
+    <script src="app-events.js"></script>
+    <script src="learning-data-actions.js"></script>
+    <script src="practice-session.js"></script>
+    <script src="practice-planner.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
