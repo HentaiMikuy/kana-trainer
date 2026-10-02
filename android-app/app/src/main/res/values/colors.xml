@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="kana_background">#F7F5EF</color>
+    <color name="kana_accent">#D94738</color>
+    <color name="ic_launcher_background">#D94738</color>
+</resources>
