@@ -56,6 +56,7 @@ import com.konomip.kanatrainer.ui.FeedbackStyle
 import com.konomip.kanatrainer.ui.KanaTrainerViewModel
 import com.konomip.kanatrainer.ui.components.KanaText
 import com.konomip.kanatrainer.ui.components.StatStrip
+import com.konomip.kanatrainer.ui.edgeToEdgeRoot
 import com.konomip.kanatrainer.ui.theme.LocalKanaColors
 import com.konomip.kanatrainer.ui.theme.LocalKanaFontFamily
 import kotlinx.coroutines.delay
@@ -95,7 +96,7 @@ fun QuizScreen(viewModel: KanaTrainerViewModel, modifier: Modifier = Modifier) {
     val current = round.current
     val speakerAvailable by viewModel.speaker.available.collectAsState()
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier.edgeToEdgeRoot().fillMaxSize()) {
         TopAppBar(
             navigationIcon = {
                 TextButton(onClick = { viewModel.goBack() }) { Text("退出") }

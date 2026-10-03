@@ -2,5 +2,6 @@
 <resources>
     <color name="kana_background">#F7F5EF</color>
     <color name="kana_accent">#D94738</color>
-    <color name="ic_launcher_background">#D94738</color>
+    <!-- 自适应图标底色：与应用界面的纸感米白一致，字形用品牌红 -->
+    <color name="ic_launcher_background">#F7F5EF</color>
 </resources>

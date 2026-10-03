@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Kana Trainer 应用图标草稿</title>
+<style>
+  :root {
+    --ink: #20252B;
+    --muted: #69727D;
+    --line: #E2DED4;
+    --paper: #FFFDF8;
+    --bg: #F7F5EF;
+    --red: #D94738;
+    --teal: #157E75;
+    --gold: #D7A63B;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 28px 32px 40px;
+    background: var(--bg); color: var(--ink);
+    font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: .01em; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 22px; }
+  h2 { font-size: 14px; margin: 26px 0 12px; color: var(--muted);
+       text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  .row { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px; width: 336px;
+  }
+  .card h3 { margin: 0 0 2px; font-size: 14px; }
+  .card .note { margin: 0 0 12px; font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .card .note b { color: var(--ink); font-weight: 600; }
+  .swatches { display: flex; gap: 5px; margin-top: 10px; }
+  .sw { width: 20px; height: 20px; border-radius: 5px; border: 1px solid rgba(0,0,0,.12); }
+  .sizes { display: flex; gap: 14px; align-items: flex-end; margin-top: 4px; }
+  .sizes figure { margin: 0; text-align: center; }
+  .sizes figcaption { font-size: 10px; color: var(--muted); margin-top: 5px; }
+  .legend { display: flex; gap: 20px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .key { width: 22px; height: 0; border-top: 2px dashed #B9B2A4; }
+  .key.solid { border-top: 2px solid #B9B2A4; }
+</style>
+</head>
+<body>
+
+<h1>Kana Trainer 应用图标草稿</h1>
+<p class="sub">自适应图标（adaptive icon）：画布 108×108，其中仅中央 72×72 一定可见，再内缩到 66×66 才是各种遮罩都安全的核心区。</p>
+
+<div class="legend">
+  <span><i class="key solid"></i> 中央 72×72（必定可见）</span>
+  <span><i class="key"></i> 66×66 安全核心区</span>
+</div>
+
+<div id="sections"></div>
+
+<script>
+const INK = '#20252B', PAPER = '#FFFDF8', BG = '#F7F5EF', RED = '#D94738', GOLD = '#D7A63B';
+
+// ── 字形一：片假名「ア」 ───────────────────────────────────────────
+// 三笔互不相连：顶横自左向右；自顶横偏右处向左下甩出长尾；末笔自左下向右上斜挑。
+const STROKES = [
+  { d: 'M 33 38.5 L 72 38.5', w: 6.5 },              // 顶横
+  { d: 'M 67 38.5 C 65 57, 56 69, 36 80', w: 7.5 },  // 第二笔
+  { d: 'M 38 66 L 60 79', w: 6.5 },                  // 第三笔
+];
+
+// ── 字形二：平假名「あ」 ───────────────────────────────────────────
+// 顶横自左向右；竖笔下行后绕圈回撇（收在右下）；末笔自下方弧形左扩、再向右上兜回。
+// 竖笔与末笔的交叉处在左上方留出一个小三角洞 —— 那是「あ」的神态，所以两者都要放细。
+const STROKES_A = [
+  { d: 'M 31 35 L 62 35', w: 6 },                        // 顶横
+  { d: 'M 49 35 C 49.5 44, 50 50, 50.5 57', w: 6.5 },    // 竖笔下行
+  { d: 'M 50.5 57 C 61 53.5, 66.5 60, 56 65.5', w: 6 },  // 绕圈回撇，扁而出头
+  { d: 'M 44 54 C 34.5 60, 32.5 70, 40 77', w: 6 },      // 末笔：向左下弧形外扩
+  { d: 'M 40 77 C 52 84, 68 77.5, 71.5 64', w: 6.5 },    // 末笔：底部大弯兜回右上
+];
+
+function glyph({ stroke, width = null, grad = null, opacity = 1, strokes = STROKES }) {
+  const paint = grad ? `stroke="url(#${grad})"` : `stroke="${stroke}"`;
+  return strokes.map(s =>
+    `<path d="${s.d}" fill="none" ${paint} stroke-width="${width ?? s.w}"
+       stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}"/>`
+  ).join('');
+}
+
+function icon({ bg, glyphSvg, defs = '', guides = false, id = '' }) {
+  const defsBlock = defs ? `<defs>${defs}</defs>` : '';
+  const guideBlock = guides ? `
+    <circle cx="54" cy="54" r="33" fill="none" stroke="#B9B2A4" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <rect x="18" y="18" width="72" height="72" fill="none" stroke="#B9B2A4" stroke-width="0.8" stroke-opacity=".55"/>` : '';
+  return `<svg viewBox="0 0 108 108" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+    ${defsBlock}
+    <rect width="108" height="108" fill="${bg}"/>
+    ${glyphSvg}
+    ${guideBlock}
+  </svg>`;
+}
+
+// 配色方案（字形与配色正交，两个字形各出一套）
+const THEMES = [
+  {
+    id: 'A', bg: RED, name: '品牌红底 · 白字',
+    note: '延续原图标的配色思路，对比最强、小尺寸最好认，缺点是红底应用多、容易撞色。',
+    swatches: [RED, '#FFFFFF'],
+    paint: { stroke: '#FFFFFF' },
+  },
+  {
+    id: 'B', bg: BG, name: '米白底 · 红字',
+    note: '沿用 App 内部的纸感配色（背景 #F7F5EF / 纸白 #FFFDF8），与界面观感最统一，安静、偏「学习工具」。',
+    swatches: [BG, RED],
+    paint: { stroke: RED },
+  },
+  {
+    id: 'C', bg: INK, name: '墨色底 · 红金渐变字',
+    note: '沉稳、在浅色壁纸上更跳，渐变取自品牌红与金色；暗色壁纸上辨识度略降。',
+    swatches: [INK, RED, GOLD],
+    paint: { grad: 'goldRed' },
+    defs: `<linearGradient id="goldRed" x1="0" y1="0" x2="1" y2="1">
+             <stop offset="0%" stop-color="#FFC9B8"/>
+             <stop offset="42%" stop-color="#F08A76"/>
+             <stop offset="100%" stop-color="${GOLD}"/>
+           </linearGradient>`,
+  },
+];
+
+// 两个字形各自 × 三套配色
+const glyphSets = [
+  {
+    key: 'ア', strokes: STROKES, theme: '片假名「ア」',
+    note: '三笔交叉，力量感强；底部两笔在小尺寸下容易并成一个 X。',
+  },
+  {
+    key: 'あ', strokes: STROKES_A, theme: '平假名「あ」',
+    note: '曲线一笔到底，辨识度高、更柔和；中段的小三角洞是它的神态所在，笔画过粗会被填死。',
+  },
+];
+
+const variants = glyphSets.flatMap(set =>
+  THEMES.map(t => ({
+    key: `${set.key}-${t.id}`,
+    name: `${t.name} · ${set.key}`,
+    note: t.note,
+    swatches: t.swatches,
+    bg: t.bg,
+    defs: t.defs || '',
+    glyph: () => glyph({ ...t.paint, strokes: set.strokes }),
+  }))
+);
+
+// —— 渲染：每个字形一段，段内为该字形的三套配色 ——
+const masks = [
+  { label: '圆形 72dp', radius: '50%', px: 72 },
+  { label: '圆角方形 72dp', radius: '16px', px: 72 },
+  { label: '小图标 48dp', radius: '11px', px: 48 },
+];
+
+document.getElementById('sections').innerHTML = glyphSets.map((set, gi) => {
+  const cells = THEMES.map(t => {
+    const g = glyph({ ...t.paint, strokes: set.strokes });
+    return `
+      <div class="card">
+        <h3>${t.name}</h3>
+        <p class="note">${t.note}</p>
+        <div style="width:300px;height:300px;border-radius:18px;overflow:hidden;border:1px solid var(--line)">
+          ${icon({ bg: t.bg, glyphSvg: g, defs: t.defs || '', guides: true })}
+        </div>
+        <div class="swatches">${t.swatches.map(c => `<i class="sw" style="background:${c}"></i>`).join('')}</div>
+      </div>`;
+  }).join('');
+
+  const thumbs = THEMES.flatMap(t => masks.map(m => `
+    <figure>
+      <div style="width:${m.px}px;height:${m.px}px;border-radius:${m.radius};overflow:hidden;border:1px solid var(--line)">
+        ${icon({ bg: t.bg, glyphSvg: glyph({ ...t.paint, strokes: set.strokes }), defs: t.defs || '' })}
+      </div>
+      <figcaption>${t.id} · ${m.label}</figcaption>
+    </figure>`)).join('');
+
+  return `
+    <h2>${gi + 1} · ${set.theme}　同字形 × 三套配色</h2>
+    <p class="sub" style="margin:-6px 0 12px">${set.note}</p>
+    <div class="row">${cells}</div>
+    <div class="sizes" style="margin-top:16px">${thumbs}</div>`;
+}).join('');
+</script>
+</body>
+</html>

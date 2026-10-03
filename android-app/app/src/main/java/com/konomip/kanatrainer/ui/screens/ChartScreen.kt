@@ -42,6 +42,7 @@ import com.konomip.kanatrainer.data.Script
 import com.konomip.kanatrainer.ui.KanaTrainerViewModel
 import com.konomip.kanatrainer.ui.MasteryState
 import com.konomip.kanatrainer.ui.components.KanaText
+import com.konomip.kanatrainer.ui.edgeToEdgeRoot
 import com.konomip.kanatrainer.ui.theme.LocalKanaColors
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -63,7 +64,7 @@ fun ChartScreen(viewModel: KanaTrainerViewModel, modifier: Modifier = Modifier) 
         map
     }
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier.edgeToEdgeRoot().fillMaxSize()) {
         TopAppBar(
             navigationIcon = {
                 TextButton(onClick = { viewModel.goBack() }) { Text("返回") }

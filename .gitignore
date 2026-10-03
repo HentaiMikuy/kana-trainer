@@ -1,1 +1,23 @@
 .DS_Store
+
+# --- 构建产物 ---
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.jar
+*.keystore
+*.jks
+
+# --- 会话/编辑器遗留 ---
+/local.properties
+*.log
+
+# --- android-app/design 预览图 ---
+# 由 make_preview.py / make_icon_preview.py 生成，可随时重跑；生成脚本本身保留在版本库中。
+/android-app/design/icon-drafts.png
+/android-app/design/icon-glyph-preview.png
+/android-app/design/icon-glyph-preview.html
+/android-app/design/icon-size-preview.png
+/android-app/design/icon-size-preview.html

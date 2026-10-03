@@ -1,11 +1,13 @@
 package com.konomip.kanatrainer
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -28,7 +30,15 @@ import com.konomip.kanatrainer.ui.theme.LocalKanaFontFamily
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        // 系统栏保持透明，内容铺满整屏（状态栏/导航栏图标之下），系统栏图标明暗跟随应用主题，
+        // 否则暗色主题下状态栏图标会与背景同色而看不见。
+        val darkTheme = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+            Configuration.UI_MODE_NIGHT_YES
+        val transparent = android.graphics.Color.TRANSPARENT
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(transparent, transparent) { darkTheme },
+            navigationBarStyle = SystemBarStyle.auto(transparent, transparent) { darkTheme },
+        )
         setContent {
             val viewModel: KanaTrainerViewModel = viewModel()
             val state by viewModel.uiState.collectAsState()
@@ -56,13 +66,15 @@ fun KanaTrainerApp(viewModel: KanaTrainerViewModel) {
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-    ) { innerPadding ->
-        val modifier = Modifier.padding(innerPadding)
+        // 安全区全部交给屏幕自己处理（顶部由 TopAppBar 吸收，其余由 edgeToEdgeRoot 让开），
+        // 这样状态栏下方不会先空出一段再画 AppBar。Snackbar 仍会自己避开手势条。
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+    ) { _ ->
         when (state.screen) {
-            Screen.SETTINGS -> SettingsScreen(viewModel, modifier)
-            Screen.QUIZ -> QuizScreen(viewModel, modifier)
-            Screen.CHART -> ChartScreen(viewModel, modifier)
-            Screen.WEAK -> WeakScreen(viewModel, modifier)
+            Screen.SETTINGS -> SettingsScreen(viewModel, Modifier)
+            Screen.QUIZ -> QuizScreen(viewModel, Modifier)
+            Screen.CHART -> ChartScreen(viewModel, Modifier)
+            Screen.WEAK -> WeakScreen(viewModel, Modifier)
         }
     }
 }

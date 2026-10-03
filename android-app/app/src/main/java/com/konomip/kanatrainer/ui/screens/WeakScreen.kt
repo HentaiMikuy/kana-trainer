@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.konomip.kanatrainer.data.LearningRecords
 import com.konomip.kanatrainer.ui.KanaTrainerViewModel
 import com.konomip.kanatrainer.ui.components.KanaText
+import com.konomip.kanatrainer.ui.edgeToEdgeRoot
 import com.konomip.kanatrainer.ui.theme.LocalKanaColors
 
 /** 容易忘的假名页面，对应 Web 版 weak-panel + reviewMistakesButton + clearRecordsButton。 */
@@ -45,7 +46,7 @@ fun WeakScreen(viewModel: KanaTrainerViewModel, modifier: Modifier = Modifier) {
 
     val weakList = remember(state.mistakes) { viewModel.getWeakList() }
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier.edgeToEdgeRoot().fillMaxSize()) {
         TopAppBar(
             navigationIcon = {
                 TextButton(onClick = { viewModel.goBack() }) { Text("返回") }

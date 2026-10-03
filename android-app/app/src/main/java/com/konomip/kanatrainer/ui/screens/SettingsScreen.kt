@@ -43,6 +43,7 @@ import com.konomip.kanatrainer.logic.PracticeType
 import com.konomip.kanatrainer.logic.PronunciationMode
 import com.konomip.kanatrainer.ui.KanaTrainerViewModel
 import com.konomip.kanatrainer.ui.components.ControlGroup
+import com.konomip.kanatrainer.ui.edgeToEdgeRoot
 import com.konomip.kanatrainer.ui.components.KanaText
 import com.konomip.kanatrainer.ui.components.SliderRow
 import com.konomip.kanatrainer.ui.components.StatStrip
@@ -63,7 +64,7 @@ fun SettingsScreen(viewModel: KanaTrainerViewModel, modifier: Modifier = Modifie
         ActivityResultContracts.OpenDocument(),
     ) { uri -> viewModel.importRecords(uri) }
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier.edgeToEdgeRoot().fillMaxSize()) {
         TopAppBar(
             title = {
                 Column {
