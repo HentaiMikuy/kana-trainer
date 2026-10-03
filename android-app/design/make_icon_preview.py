@@ -73,7 +73,7 @@ h1{{font-size:19px;margin:0 0 3px}}
 .ic svg{{display:block}}
 </style></head><body>
 <h1>启动图标 · 真实尺寸预览</h1>
-<p class="lead">路径数据直接取自 app/src/main/res/drawable/ic_launcher_foreground.xml，与打包进 APK 的资源同源。底色 {BG}、字形 {glyph_color}。</p>
+<p class="lead">路径数据直接取自 app/src/main/res/drawable/ic_launcher_foreground.xml，与打包进 APK 的资源同源。底色 {BG}、字形 {glyph_color}。字形按 54 单位归一化（此前为 62）。</p>
 <div class="row">{cells}</div>
 </body></html>'''
 

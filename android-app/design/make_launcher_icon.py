@@ -3,7 +3,8 @@
 从 UD Digi Kyokasho 抽取平假名「あ」的真实轮廓，生成 Android 自适应图标的前景 VectorDrawable。
 容器变换（平移/缩放/翻转 y 轴）全部烘焙进路径坐标，避免不同渲染器对 <group> 变换的处理差异。
 
-用法：python make_launcher_icon.py > ic_launcher_foreground.xml
+用法：python make_launcher_icon.py [安全区尺寸，默认 54] > ic_launcher_foreground.xml
+      数值越小字形越小、四周留白越多；上限 66（各遮罩的安全核心区）。
 """
 import os
 import sys
@@ -17,8 +18,10 @@ FONT = os.path.join(os.environ["WINDIR"], "Fonts", "UDDigiKyokashoN-R.ttc")
 CHAR = "あ"
 
 # 自适应图标：108×108 画布，必见区中央 72×72，安全核心区 66×66。
-# 取 62 留出安全边距，保证圆形遮罩也不切字。
-SAFE = 62.0
+# 字形按此尺寸归一化后居中：数值越小，四周留白越多。
+SAFE = float(sys.argv[1]) if len(sys.argv) > 1 else 54.0
+if not 30.0 <= SAFE <= 66.0:
+    raise SystemExit(f"安全区尺寸应在 30..66 之间，收到 {SAFE}")
 CENTER = 54.0
 # 1 SVG 单位对应的字体单位数，按最大边计算
 MIN_THICKNESS_UNITS = 1900  # 约 0.97 个 SVG 单位，防止极细笔画在小尺寸下消失

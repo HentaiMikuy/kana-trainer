@@ -104,7 +104,8 @@ h1{{font-size:20px;margin:0 0 4px}}
 .ic svg{{display:block}}
 </style></head><body>
 <h1>真实字体字形 · 应用图标候选</h1>
-<p class="lead">字形轮廓直接取自字体文件（fontTools 提取），非手绘。每种字体给出平假名与片假名，以及 150dp 细节、72dp 三配色、48dp 小尺寸三档。</p>
+<p class="lead">字形轮廓直接取自字体文件（fontTools 提取），非手绘。每种字体给出平假名与片假名，以及 150dp 细节、72dp 三配色、48dp 小尺寸三档。<br>
+注意：此页用于横向比较各字体字形，候选统一按固定尺寸归一化，<b>不代表当前图标实际大小</b>；实际图标见 icon-size-preview.png。</p>
 {"".join(cards)}
 </body></html>'''
 
