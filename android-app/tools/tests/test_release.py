@@ -1,13 +1,24 @@
 import hashlib
+import io
 import json
 from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from prepare_release import prepare
-from publish_release import publish
+from publish_release import GitHub, publish
+
+
+class GitHubTest(unittest.TestCase):
+    def test_repository_metadata_uses_endpoint_without_trailing_slash(self):
+        api = GitHub("test-token", "a/b")
+        for path in ("", "/"):
+            with self.subTest(path=path), patch("urllib.request.urlopen", return_value=io.BytesIO(b'{"private":false}')) as request:
+                self.assertFalse(api.request(path)["private"])
+                self.assertEqual("https://api.github.com/repos/a/b", request.call_args.args[0].full_url)
 
 
 class FakeGitHub:

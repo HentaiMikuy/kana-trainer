@@ -17,8 +17,9 @@ class GitHub:
         self.base = f"https://api.github.com/repos/{repository}"
 
     def request(self, path, method="GET", body=None, content_type="application/json", missing_ok=False):
-        url = self.base + path if path.startswith("/") else path
-        if not (url.startswith(self.base + "/") or url.startswith("https://uploads.github.com/repos/")):
+        # GitHub's repository endpoint returns 404 with a trailing slash.
+        url = self.base if path in ("", "/") else self.base + path if path.startswith("/") else path
+        if not (url == self.base or url.startswith(self.base + "/") or url.startswith("https://uploads.github.com/repos/")):
             raise ValueError("Unexpected GitHub API endpoint")
         if body is not None and not isinstance(body, bytes):
             body = json.dumps(body).encode()
