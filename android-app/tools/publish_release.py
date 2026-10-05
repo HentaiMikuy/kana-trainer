@@ -38,8 +38,7 @@ class GitHub:
             raise RuntimeError(f"GitHub API {method} failed: HTTP {error.code}") from None
 
 
-def publish(api, directory, commit, source_api=None):
-    source_api = source_api or api
+def publish(api, directory, commit):
     manifest = json.loads((directory / "update.json").read_text(encoding="utf-8"))
     code = manifest["versionCode"]
     tag = f"android-{code}"
@@ -49,7 +48,7 @@ def publish(api, directory, commit, source_api=None):
     apk = directory / apk_name
     if apk.stat().st_size != manifest["sizeBytes"] or hashlib.sha256(apk.read_bytes()).hexdigest() != manifest["sha256"]:
         raise ValueError("APK does not match manifest")
-    if source_api.request("/git/ref/heads/main")["object"]["sha"] != commit:
+    if api.request("/git/ref/heads/main")["object"]["sha"] != commit:
         print("Skip: this commit is no longer the main branch head.")
         return
     existing = api.request(f"/releases/tags/{tag}", missing_ok=True)
@@ -63,12 +62,8 @@ def publish(api, directory, commit, source_api=None):
             raise ValueError("Refusing to replace latest with an older/ambiguous version. Review versionCode/history.")
     release_data = dict(
         tag_name=tag, name=f"Android {manifest['versionName']} ({code})",
-        body=manifest["notes"], draft=True, prerelease=False,
+        body=manifest["notes"], draft=True, prerelease=False, target_commitish=commit,
     )
-    # A private source commit does not exist in a separate public distribution repo.
-    # In that case GitHub tags the distribution repo's default branch.
-    if source_api is api:
-        release_data["target_commitish"] = commit
     release = existing or api.request("/releases", "POST", release_data)
     release_id = release["id"]
     assets = {apk_name: apk.read_bytes(), "update.json": (directory / "update.json").read_bytes()}
@@ -84,7 +79,7 @@ def publish(api, directory, commit, source_api=None):
         digest = result.get("digest")
         if digest and digest != "sha256:" + hashlib.sha256(payload).hexdigest():
             raise ValueError("GitHub asset digest mismatch; draft left unpublished")
-    if source_api.request("/git/ref/heads/main")["object"]["sha"] != commit:
+    if api.request("/git/ref/heads/main")["object"]["sha"] != commit:
         print("Skip publication: a newer commit arrived. Uploaded assets remain in a draft.")
         return
     api.request(f"/releases/{release_id}", "PATCH", dict(draft=False, make_latest="true",
@@ -93,6 +88,5 @@ def publish(api, directory, commit, source_api=None):
 
 
 if __name__ == "__main__":
-    source = GitHub(os.environ["SOURCE_GITHUB_TOKEN"], os.environ["GITHUB_REPOSITORY"])
-    publish(GitHub(os.environ["GH_TOKEN"], os.environ["RELEASE_REPOSITORY"]),
-            Path(os.environ["RELEASE_ASSET_DIR"]), os.environ["GITHUB_SHA"], source)
+    publish(GitHub(os.environ["GH_TOKEN"], os.environ["GITHUB_REPOSITORY"]),
+            Path(os.environ["RELEASE_ASSET_DIR"]), os.environ["GITHUB_SHA"])

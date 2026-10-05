@@ -15,7 +15,7 @@ val releaseVersionCode = providers.gradleProperty("ciVersionCode")
         require(it in 1..2_100_000_000) { "versionCode is outside the Android range" }
     }
 val updateRepository = providers.gradleProperty("updateRepository")
-    .orElse("HentaiMikuy/kana-trainer-releases").get().also {
+    .orElse("HentaiMikuy/kana-trainer").get().also {
         require(Regex("[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+").matches(it))
     }
 val signingVariables = listOf("ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD",

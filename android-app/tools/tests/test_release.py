@@ -74,14 +74,12 @@ class ReleaseTest(unittest.TestCase):
         uploads = [path for path, method, _ in api.calls if path.startswith("https://uploads.github.com")]
         self.assertEqual(2, len(uploads))
 
-    def test_private_source_and_public_distribution_are_separate(self):
-        source = FakeGitHub()
-        distribution = FakeGitHub(head="public-repo-commit")
-        publish(distribution, self.output, "current", source)
-        self.assertTrue(distribution.published)
-        create = next(body for path, method, body in distribution.calls if path == "/releases" and method == "POST")
-        self.assertNotIn("target_commitish", create)
-        self.assertTrue(all(path == "/git/ref/heads/main" for path, _, _ in source.calls))
+    def test_release_tag_targets_built_commit(self):
+        api = FakeGitHub()
+        publish(api, self.output, "current")
+        self.assertTrue(api.published)
+        create = next(body for path, method, body in api.calls if path == "/releases" and method == "POST")
+        self.assertEqual("current", create["target_commitish"])
 
     def test_failed_asset_upload_leaves_draft_unpublished(self):
         api = FakeGitHub(fail_upload=True)

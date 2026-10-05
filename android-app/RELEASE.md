@@ -2,8 +2,8 @@
 
 ## 日常发布
 
-源码仓库为私有仓库。APK 与更新信息发布到独立公开仓库 `HentaiMikuy/kana-trainer-releases`，
-不公开源代码、私有提交日志或学习记录。完成首次签名与发布权限配置后，推送 `main` 中的 Android 代码会触发
+源码、APK 与更新信息都使用当前公开仓库 `HentaiMikuy/kana-trainer`。
+完成首次签名配置后，推送 `main` 中的 Android 代码会触发
 `.github/workflows/android-release.yml`。仅 Web 文件变化不会发布 Android 包。
 也可在 GitHub Actions 中手动运行 **Android release**（只允许 main）。
 
@@ -19,19 +19,18 @@
 - 版本信息从构建产物 `output-metadata.json` 读取，最低系统版本由 `apkanalyzer` 读取。
 - 同一 `versionName` 下可有多个构建；应用按 `versionCode` 判断更新，不比较显示字符串。
 
-## 公开分发仓库与发布权限
+## 当前仓库与发布权限
 
-1. 创建公开仓库 `HentaiMikuy/kana-trainer-releases`，勾选初始化 README。
-2. 在源码仓库的 Actions Variables 设置 `ANDROID_RELEASE_REPOSITORY` 为该仓库全名。
-   不设置时默认使用上面的名字。本机也可用 Gradle `-PupdateRepository=owner/repo` 覆盖。
-3. 在 GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens 创建 Token，
-   只选择公开分发仓库，授予 Repository permissions → Contents: Read and write。
-   将 Token 保存为**私有源码仓库**的 Actions Secret `ANDROID_RELEASE_TOKEN`，不要写进 APK 或聊天。
-   Token 过期前需轮换；正常 GitHub 推送凭据不会被复制到 CI。
-4. 私有源码仓库的内置 `GITHUB_TOKEN` 仅用于读源码仓库，不能跨仓库发布。
-   公开仓库需允许 Release 创建；若账户开启 immutable releases，请确保允许发布前准备草稿资产。
+1. 当前仓库须保持公开并启用 GitHub Actions，手机才能匿名读取更新信息和 APK。
+2. 工作流直接使用 `github.repository` 作为发布目标与应用的更新地址，
+   发布任务声明 `contents: write`，使用 GitHub 自动提供的 `GITHUB_TOKEN` 创建 Release。
+   无需创建个人访问令牌，也无需配置 `ANDROID_RELEASE_TOKEN`。
+3. 不再读取旧的 `ANDROID_RELEASE_REPOSITORY` 变量；已有配置可以删除。
+   本机构建默认使用 `HentaiMikuy/kana-trainer`，也可用 Gradle `-PupdateRepository=owner/repo` 覆盖。
+4. 仓库需允许 Release 创建；若账户开启 immutable releases，请确保允许发布前准备草稿资产。
+   Release tag 指向本次构建的源码提交，便于追溯。
 
-更新说明来自 `release-notes.md`，发布前编辑该文件。不会自动将私有提交日志公开。
+更新说明来自 `release-notes.md`，发布前编辑该文件。
 
 ## 首次签名配置
 
@@ -63,7 +62,7 @@ WSL 可以把 `--java` 指向 Android Studio 的 `jbr/bin/java.exe`。
 使用 GitHub CLI 时，可将编码后的密钥和密码通过标准输入交给 `gh secret set`，
 避免把它们放进 shell 命令历史。GitHub 只提供 Secret 名称，无法读回原始值。
 工作流只在 main 上接触签名，签名文件写入临时目录并在结束时删除。
-源码仓库需要启用 Actions；跨仓库 Release 写权限来自 `ANDROID_RELEASE_TOKEN`。
+四项签名 Secrets 仍然必需；Release 发布权限由工作流的内置 `GITHUB_TOKEN` 提供。
 
 ## 手机更新
 
@@ -74,7 +73,7 @@ WSL 可以把 `--java` 指向 Android Studio 的 `jbr/bin/java.exe`。
 应用读取：
 
 ```text
-https://github.com/HentaiMikuy/kana-trainer-releases/releases/latest/download/update.json
+https://github.com/HentaiMikuy/kana-trainer/releases/latest/download/update.json
 ```
 
 下载后及每次开始安装前，检查文件大小、SHA-256、包名、实际 versionCode、最低系统版本和签名。
@@ -85,7 +84,10 @@ APK 存在应用私有的外部文件目录中；安装完成后再次进入更�
 
 404 表示尚无可用更新信息；超时、无法连接、损坏的 JSON、存储不足等会显示错误并允许重试。
 GitHub 在部分网络下可能较慢，页面提供浏览器发布页入口。应用不内置 GitHub token，
-因此分发仓库/发布资产必须公开；源码仓库可继续保持私有。
+因此当前仓库和发布资产必须公开。
+
+如果已经安装过指向旧分发仓库的正式包，需要手动下载当前仓库的新正式 APK 并覆盖安装一次，
+以切换更新地址；相同正式签名可保留学习记录，此后通过应用内更新即可。
 
 首次从此前的 debug/performance 包迁移：先导出学习记录，卸载旧包，手动安装首个正式包，
 再导入记录。老版本没有更新模块，需要手动安装一次。后续正式版本可覆盖更新保留记录。
