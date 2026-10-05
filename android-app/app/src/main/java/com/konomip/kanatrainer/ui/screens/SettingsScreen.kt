@@ -52,7 +52,12 @@ import com.konomip.kanatrainer.ui.help.KanaHelpDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(viewModel: KanaTrainerViewModel, modifier: Modifier = Modifier) {
+fun SettingsScreen(
+    viewModel: KanaTrainerViewModel,
+    modifier: Modifier = Modifier,
+    // 主页面切换控件（分段按钮），由外层注入，显示在 TopAppBar 下方。
+    pageSwitch: (@Composable () -> Unit)? = null,
+) {
     val state by viewModel.uiState.collectAsState()
     val settings = state.settings
 
@@ -83,6 +88,8 @@ fun SettingsScreen(viewModel: KanaTrainerViewModel, modifier: Modifier = Modifie
                 }
             },
         )
+
+        pageSwitch?.invoke()
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

@@ -18,7 +18,7 @@ Web 版已实现的能力在安卓版中全部保留：
 | 会话统计 | `practice-session.js`（正确率、平均用时、错题复习题量） | `logic/PracticeSession.kt` |
 | 智能复习权重 | `calculateReviewWeight()` | `logic/ReviewWeight.kt` |
 | 限时挑战 | `challenge-timer.js`（倒计时、超时判错） | Compose `LaunchedEffect` 倒计时（`QuizScreen.kt`） |
-| 发音 | Web Speech API（`speech.js`） | Android 原生 `TextToSpeech`，ja-JP、语速 0.82（`speech/KanaSpeaker.kt`） |
+| 发音 | Web Speech API（`speech.js`） | 内置 Nanami 日语女声音频（102 个文件），系统 TTS 回退（`speech/KanaSpeaker.kt`） |
 | 页面 UI | `index.html` + `styles.css` + DOM 渲染模块 | Jetpack Compose（Material 3，配色复刻 Web 版） |
 | 数据导入导出 | 浏览器下载/文件选择 | SAF（`CreateDocument` / `OpenDocument`），payload 格式与 Web 版一致 |
 
@@ -59,6 +59,24 @@ JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" ./gradle
 ```
 
 安装到设备：`adb install -r app/build/outputs/apk/debug/app-debug.apk`。
+
+### 五十音图滑动性能验证
+
+五十音图按假名行懒加载，分区标题与每行使用独立的稳定标识及复用类型。
+表格宽度在视口层统一计算；仅在窄屏或大字体需要时启用统一横向滚动。
+
+验证流畅度时使用非调试的 `performance` 包（启用 R8 和资源压缩），避免 Debug
+构建开销干扰。它使用本机 debug 签名，可覆盖同机生成的 Debug APK，保留学习记录；
+此签名仅供本地验证，不用于商店发布。
+
+```bash
+./gradlew :app:assemblePerformance
+adb install -r app/build/outputs/apk/performance/app-performance.apk
+```
+
+在真机上检查首次及重复快速滑过清音、浊音、半浊音、拗音的过程，再检查大字体下的
+横向滑动、显示方式切换、遮挡及点按发音。性能结论应以该构建的真机帧耗时为准；
+编译成功和单元测试通过不能证明所有设备上零掉帧。
 
 ## 目录结构
 
@@ -104,4 +122,4 @@ UI，由模拟器手工冒烟测试覆盖（安装、答题、判题反馈、错
 - 手写体为衬线近似，未捆绑 Klee One 等字体。
 - 遮挡在 Android 11 及以下用半透明而非高斯模糊实现。
 - 设置项暂不持久化（与 Web 版一致，仅学习记录持久化）。
-- 发音依赖设备日语 TTS 数据；未安装时发音按钮禁用，其余功能不受影响。
+- 题库发音优先使用完整的离线 Nanami 女声音频；系统 TTS 仅作为文件缺失时的回退。

@@ -24,3 +24,6 @@
 /android-app/design/icon-size-preview.html
 /android-app/design/icon-size-compare.png
 /android-app/design/icon-size-compare.html
+
+# --- 本机权限修复记录 ---
+/.acl-recovery/

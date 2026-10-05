@@ -23,6 +23,9 @@ data class KanaItem(
 ) {
     /** 与 Web 版 getItemKey 保持一致：`hiragana|katakana|romaji`。 */
     val key: String get() = "$hiragana|$katakana|$romaji"
+
+    /** 发音文件名（assets/audio/kana/ 下，不含扩展名）：多写法罗马音取斜杠前的主写法。 */
+    val audioKey: String get() = romaji.substringBefore('/')
 }
 
 data class BaseRow(val id: String, val label: String, val items: List<RawKana>)
@@ -47,6 +50,17 @@ data class WeakRow(val id: String, val label: String, val misses: Int, val count
 data class ChartRowGroup(val id: String, val label: String, val items: List<KanaItem>)
 
 data class ChartSection(val key: String, val title: String, val items: List<KanaItem>)
+
+/** 五十音图网格行：slots 中 null 表示经典表中的空位（如 や行 的 i/e 列）。 */
+data class GojuonRow(val id: String, val label: String, val slots: List<KanaItem?>)
+
+/** 五十音图分区：清音 / 浊音 / 半浊音为 a-i-u-e-o 五列，拗音为 a-u-o 三列。 */
+data class GojuonSection(
+    val key: String,
+    val title: String,
+    val columns: List<String>,
+    val rows: List<GojuonRow>,
+)
 
 /** 本轮错题条目，对应 Web 版 rememberRoundMistake 写入的结构。 */
 data class RoundMistake(
@@ -335,6 +349,90 @@ object KanaData {
             ChartSection("dakuten", "浊音", voicedDakuten),
             ChartSection("semi", "半浊音", semiDakuten),
             ChartSection("small", "拗音", SMALL_KANA_ITEMS.map { toItem(it, "small") }),
+        )
+    }
+
+    // ---------- 五十音图经典网格 ----------
+
+    private val GOJUON_VOWEL_COLUMNS = listOf("a", "i", "u", "e", "o")
+    private val GOJUON_SMALL_COLUMNS = listOf("a", "u", "o")
+
+    /** 按罗马音末尾元音定位列；ん 等无元音结尾的返回 -1。 */
+    private fun gojuonVowelColumn(romaji: String): Int =
+        GOJUON_VOWEL_COLUMNS.indexOf(romaji.lastOrNull()?.toString() ?: "")
+
+    private fun gojuonSmallColumn(romaji: String): Int =
+        GOJUON_SMALL_COLUMNS.indexOf(romaji.lastOrNull()?.toString() ?: "")
+
+    /** 清音直接按 BASE_ROWS 的行结构落位，ん 单独追加一行（放在最后一列）。 */
+    private fun buildGojuonBaseRows(): List<GojuonRow> {
+        val rows = mutableListOf<GojuonRow>()
+        BASE_ROWS.forEach { row ->
+            val slots = MutableList<KanaItem?>(GOJUON_VOWEL_COLUMNS.size) { null }
+            val unslotted = mutableListOf<KanaItem>()
+            row.items.forEach { raw ->
+                val item = toItem(raw, row.id)
+                val column = gojuonVowelColumn(item.romaji)
+                if (column >= 0) slots[column] = item else unslotted += item
+            }
+            rows += GojuonRow(row.id, "${row.label}行", slots)
+            unslotted.forEach { item ->
+                val extra = MutableList<KanaItem?>(GOJUON_VOWEL_COLUMNS.size) { null }
+                extra[extra.lastIndex] = item
+                // 独立假名行使用所属行前缀，避免ん的 n 与な行的 n 冲突。
+                rows += GojuonRow("${row.id}:extra:${item.romaji}", item.hiragana, extra)
+            }
+        }
+        return rows
+    }
+
+    /** 浊音 / 拗音按行优先顺序落位：目标列已被占用时开启新行（对应 ぢ/づ 回到 だ行 等）。 */
+    private fun buildGojuonSequentialRows(
+        items: List<RawKana>,
+        columnCount: Int,
+        columnOf: (String) -> Int,
+    ): List<GojuonRow> {
+        val rows = mutableListOf<GojuonRow>()
+        var slots: MutableList<KanaItem?>? = null
+        items.forEach { raw ->
+            val item = toItem(raw, raw.group ?: "base")
+            val column = columnOf(item.romaji)
+            val current = slots
+            if (current == null || column < 0 || current[column] != null) {
+                val id = item.romaji.substringBefore('/').replace(Regex("[aiueo]$"), "")
+                val newSlots = MutableList<KanaItem?>(columnCount) { null }
+                rows += GojuonRow(id, "${item.hiragana}行", newSlots)
+                slots = newSlots
+            }
+            if (column >= 0) checkNotNull(slots)[column] = item
+        }
+        return rows
+    }
+
+    /** 五十音图整页数据：经典 a-i-u-e-o 网格，含空位，与 Web 版 gojuon-chart 的布局一致。 */
+    fun getGojuonSections(): List<GojuonSection> {
+        val voiced = DAKUTEN_ITEMS.filter { !it.romaji.startsWith("p") }
+        val semi = DAKUTEN_ITEMS.filter { it.romaji.startsWith("p") }
+        return listOf(
+            GojuonSection("base", "清音", GOJUON_VOWEL_COLUMNS, buildGojuonBaseRows()),
+            GojuonSection(
+                "dakuten",
+                "浊音",
+                GOJUON_VOWEL_COLUMNS,
+                buildGojuonSequentialRows(voiced, GOJUON_VOWEL_COLUMNS.size, ::gojuonVowelColumn),
+            ),
+            GojuonSection(
+                "semi",
+                "半浊音",
+                GOJUON_VOWEL_COLUMNS,
+                buildGojuonSequentialRows(semi, GOJUON_VOWEL_COLUMNS.size, ::gojuonVowelColumn),
+            ),
+            GojuonSection(
+                "small",
+                "拗音",
+                GOJUON_SMALL_COLUMNS,
+                buildGojuonSequentialRows(SMALL_KANA_ITEMS, GOJUON_SMALL_COLUMNS.size, ::gojuonSmallColumn),
+            ),
         )
     }
 

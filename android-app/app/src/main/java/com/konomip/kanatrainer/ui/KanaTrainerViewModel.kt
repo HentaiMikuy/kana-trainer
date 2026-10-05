@@ -41,7 +41,7 @@ import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 /** 应用内页面。 */
-enum class Screen { SETTINGS, QUIZ, CHART, WEAK }
+enum class Screen { SETTINGS, QUIZ, CHART, WEAK, GOJUON }
 
 enum class FeedbackStyle { NEUTRAL, RIGHT, WRONG }
 
@@ -515,7 +515,7 @@ class KanaTrainerViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     fun speakItem(item: KanaItem) {
-        speaker.speak(item.hiragana)
+        speaker.speak(item.hiragana, item.audioKey)
     }
 
     // ---------- 学习数据动作 ----------

@@ -13,3 +13,8 @@
 *.aab
 /.omo/
 /.codegraph
+
+# 本地音频预览、Python 缓存和临时脚本
+/audio-preview/
+/tools/__pycache__/
+/design/_copy.js

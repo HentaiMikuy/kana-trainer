@@ -17,6 +17,14 @@ private data class HelpEntry(val title: String, val body: String)
 
 private val HELP_ENTRIES = listOf(
     HelpEntry(
+        "侧边导航",
+        "左侧导航栏可在「记忆练习」和「五十音图」两个主页面之间切换，练习进度互不影响。",
+    ),
+    HelpEntry(
+        "五十音图",
+        "完整展示清音、浊音、半浊音和拗音的经典表格，支持对照 / 平假名 / 片假名三种显示方式，点击假名可播放发音，也可用「遮挡」模糊内容进行自测。",
+    ),
+    HelpEntry(
         "练习设置",
         "选择片假名、平假名或混合练习，调整答题方向、答题方式、题量、练习范围和限时挑战。",
     ),
