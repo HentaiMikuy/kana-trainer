@@ -20,7 +20,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.font.FontWeight
@@ -71,7 +69,6 @@ fun GojuonScreen(
     val sections = remember { KanaData.getGojuonSections() }
     val records = state.records
 
-    var privacyOn by remember { mutableStateOf(false) }
     var display by remember { mutableStateOf(GojuonDisplay.BOTH) }
 
     // 掌握状态只在记录变化时重新计算一次
@@ -96,14 +93,6 @@ fun GojuonScreen(
                     Text(text = "五十音图", fontWeight = FontWeight.Bold)
                 }
             },
-            actions = {
-                TextButton(onClick = { privacyOn = !privacyOn }) {
-                    Text(
-                        text = if (privacyOn) "显示" else "遮挡",
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                }
-            },
         )
 
         pageSwitch?.invoke()
@@ -113,7 +102,6 @@ fun GojuonScreen(
             display = display,
             onDisplayChange = { display = it },
             masteryByItem = masteryByItem,
-            privacyOn = privacyOn,
             onSpeak = remember(viewModel) { { item -> viewModel.speakItem(item) } },
             modifier = Modifier.weight(1f),
         )
@@ -127,7 +115,6 @@ private fun GojuonContent(
     display: GojuonDisplay,
     onDisplayChange: (GojuonDisplay) -> Unit,
     masteryByItem: Map<String, MasteryState>,
-    privacyOn: Boolean,
     onSpeak: (KanaItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -150,7 +137,7 @@ private fun GojuonContent(
                 onSelect = { onDisplayChange(GojuonDisplay.fromId(it)) },
             )
             Text(
-                text = if (privacyOn) "已遮挡假名，点击右上角显示" else "点击假名听发音 · 新 / 练 / 弱 / 稳表示掌握程度",
+                text = "点击假名听发音 · 新 / 练 / 弱 / 稳表示掌握程度",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -199,7 +186,7 @@ private fun GojuonContent(
                                 key = { "${section.key}:row:${it.id}" },
                                 contentType = { "kana-row-${section.columns.size}" },
                             ) { row ->
-                                GojuonRowContent(row, display, masteryByItem, privacyOn, onSpeak)
+                                GojuonRowContent(row, display, masteryByItem, onSpeak)
                             }
                         }
                     }
@@ -233,11 +220,9 @@ private fun GojuonRowContent(
     row: GojuonRow,
     display: GojuonDisplay,
     masteryByItem: Map<String, MasteryState>,
-    privacyOn: Boolean,
     onSpeak: (KanaItem) -> Unit,
 ) {
     Row(
-        modifier = Modifier.alpha(if (privacyOn) 0.12f else 1f),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         row.slots.forEach { item ->
@@ -248,7 +233,6 @@ private fun GojuonRowContent(
                     item = item,
                     display = display,
                     mastery = masteryByItem[item.key],
-                    privacyOn = privacyOn,
                     onSpeak = onSpeak,
                     modifier = Modifier.weight(1f),
                 )
@@ -263,7 +247,6 @@ private fun GojuonCell(
     item: KanaItem,
     display: GojuonDisplay,
     mastery: MasteryState?,
-    privacyOn: Boolean,
     onSpeak: (KanaItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -291,7 +274,6 @@ private fun GojuonCell(
 
     Surface(
         onClick = { onSpeak(item) },
-        enabled = !privacyOn,
         modifier = modifier.heightIn(min = 88.dp),
         shape = MaterialTheme.shapes.medium,
         color = bg,
@@ -386,7 +368,6 @@ private fun GojuonSectionPreview() {
             display = GojuonDisplay.BOTH,
             onDisplayChange = {},
             masteryByItem = emptyMap(),
-            privacyOn = false,
             onSpeak = {},
         )
     }
@@ -401,7 +382,6 @@ private fun GojuonYoonPreview() {
             display = GojuonDisplay.BOTH,
             onDisplayChange = {},
             masteryByItem = emptyMap(),
-            privacyOn = false,
             onSpeak = {},
         )
     }
