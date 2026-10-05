@@ -55,7 +55,7 @@ jobs:
               raise SystemExit('This repository must be public for anonymous app updates. See RELEASE.md.')
           PY
       - name: Install Android SDK
-        run: sdkmanager 'platforms;android-37' 'build-tools;37.0.0'
+        run: sdkmanager 'platforms;android-37.0' 'build-tools;37.0.0'
       - name: Run unit tests
         run: |
           bash ./gradlew :app:testDebugUnitTest --no-daemon --console=plain
