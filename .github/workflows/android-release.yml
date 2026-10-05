@@ -36,6 +36,9 @@ jobs:
           distribution: temurin
           java-version: '21'
       - uses: android-actions/setup-android@v3
+        with:
+          # The legacy 'tools' package is no longer distributed by Google.
+          packages: 'platform-tools'
       - uses: gradle/actions/setup-gradle@v4
       - name: Verify distribution access
         env:
@@ -92,7 +95,7 @@ jobs:
         run: |
           apk=app/build/outputs/apk/release/app-release.apk
           "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --verbose "$apk"
-          min_sdk=$("$ANDROID_HOME/cmdline-tools/latest/bin/apkanalyzer" manifest min-sdk "$apk")
+          min_sdk=$(apkanalyzer manifest min-sdk "$apk")
           mkdir -p app/build/release-assets
           python3 tools/prepare_release.py --apk "$apk" \
             --metadata app/build/outputs/apk/release/output-metadata.json \
