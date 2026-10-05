@@ -27,6 +27,7 @@ import com.konomip.kanatrainer.ui.screens.GojuonScreen
 import com.konomip.kanatrainer.ui.screens.QuizScreen
 import com.konomip.kanatrainer.ui.screens.SegmentedRow
 import com.konomip.kanatrainer.ui.screens.SettingsScreen
+import com.konomip.kanatrainer.ui.screens.UpdateScreen
 import com.konomip.kanatrainer.ui.screens.WeakScreen
 import com.konomip.kanatrainer.ui.theme.KanaTrainerTheme
 import com.konomip.kanatrainer.ui.theme.LocalKanaFontFamily
@@ -88,6 +89,7 @@ fun KanaTrainerApp(viewModel: KanaTrainerViewModel) {
             Screen.QUIZ -> QuizScreen(viewModel)
             Screen.CHART -> ChartScreen(viewModel)
             Screen.WEAK -> WeakScreen(viewModel)
+            Screen.UPDATE -> UpdateScreen(onBack = { viewModel.goBack() })
         }
     }
 }

@@ -41,7 +41,7 @@ import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 /** 应用内页面。 */
-enum class Screen { SETTINGS, QUIZ, CHART, WEAK, GOJUON }
+enum class Screen { SETTINGS, QUIZ, CHART, WEAK, GOJUON, UPDATE }
 
 enum class FeedbackStyle { NEUTRAL, RIGHT, WRONG }
 

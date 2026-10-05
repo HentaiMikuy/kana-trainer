@@ -16,5 +16,8 @@
 
 # 本地音频预览、Python 缓存和临时脚本
 /audio-preview/
-/tools/__pycache__/
+__pycache__/
 /design/_copy.js
+
+# Permanent release credentials: back up separately; never commit.
+/.release-signing/

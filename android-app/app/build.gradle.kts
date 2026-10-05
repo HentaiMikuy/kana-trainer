@@ -1,9 +1,27 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     // Kotlin support is built into AGP 9 (no kotlin-android plugin).
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
+
+val appVersion = Properties().apply {
+    rootProject.file("version.properties").inputStream().use { load(it) }
+}
+val releaseVersionCode = providers.gradleProperty("ciVersionCode")
+    .orElse(appVersion.getProperty("versionCode")).get().toInt().also {
+        require(it in 1..2_100_000_000) { "versionCode is outside the Android range" }
+    }
+val updateRepository = providers.gradleProperty("updateRepository")
+    .orElse("HentaiMikuy/kana-trainer-releases").get().also {
+        require(Regex("[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+").matches(it))
+    }
+val signingVariables = listOf("ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD",
+    "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD")
+val releaseSigning = signingVariables.associateWith { providers.environmentVariable(it).orNull }
+val hasReleaseSigning = releaseSigning.values.all { !it.isNullOrBlank() }
 
 android {
     namespace = "com.konomip.kanatrainer"
@@ -13,13 +31,28 @@ android {
         applicationId = "com.konomip.kanatrainer"
         minSdk = 26
         targetSdk = 37
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = releaseVersionCode
+        versionName = appVersion.getProperty("versionName")
+        buildConfigField("String", "UPDATE_REPOSITORY", "\"$updateRepository\"")
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("production") {
+                storeFile = file(releaseSigning.getValue("ANDROID_KEYSTORE_PATH")!!)
+                storePassword = releaseSigning.getValue("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = releaseSigning.getValue("ANDROID_KEY_ALIAS")
+                keyPassword = releaseSigning.getValue("ANDROID_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            if (hasReleaseSigning) signingConfig = signingConfigs.getByName("production")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -38,6 +71,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     compileOptions {
@@ -76,4 +110,17 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+}
+
+// Fail closed: a release without the permanent signing key must never be published.
+val checkProductionSigning = tasks.register("checkProductionSigning") {
+    doLast {
+        check(hasReleaseSigning) {
+            "Release signing is missing. Set " + signingVariables.joinToString() +
+                ". See RELEASE.md. Use assemblePerformance for local debug-signed builds."
+        }
+    }
+}
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    dependsOn(checkProductionSigning)
 }

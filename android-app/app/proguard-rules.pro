@@ -1,1 +1,1 @@
-# Default ProGuard rules; minification is disabled for the debug-first build.
+# Kotlin serialization supplies its consumer rules. Add app-specific rules here if needed.
