@@ -41,7 +41,7 @@ import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 /** 应用内页面。 */
-enum class Screen { SETTINGS, QUIZ, CHART, WEAK, GOJUON, UPDATE }
+enum class Screen { SETTINGS, QUIZ, CHART, WEAK, GOJUON, APP_SETTINGS, UPDATE }
 
 enum class FeedbackStyle { NEUTRAL, RIGHT, WRONG }
 
@@ -155,7 +155,12 @@ class KanaTrainerViewModel(application: Application) : AndroidViewModel(applicat
     fun goBack(): Boolean {
         val current = _uiState.value.screen
         if (current == Screen.SETTINGS) return false
-        _uiState.update { it.copy(screen = Screen.SETTINGS, helpVisible = false) }
+        val destination = when (current) {
+            Screen.UPDATE -> Screen.APP_SETTINGS
+            Screen.APP_SETTINGS -> Screen.GOJUON
+            else -> Screen.SETTINGS
+        }
+        _uiState.update { it.copy(screen = destination, helpVisible = false) }
         return true
     }
 

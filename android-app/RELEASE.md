@@ -12,7 +12,7 @@
 失败时保留旧 latest。旧提交重跑不会重新发布；已经公开的同版本资产不会覆盖。
 
 - `version.properties` 中的 `versionName` 是用户可见版本，如 `1.2.0`。
-- 本机默认 `versionCode=3`。CI 的版本号为 `10000 + git rev-list --count HEAD`，从完整历史计算。
+- 本机默认 `versionCode=4`。CI 的版本号为 `10000 + git rev-list --count HEAD`，从完整历史计算。
 - `main` 必须保留线性增长的历史，不要重置或强推改写已发布历史。
   发布脚本也会拒绝将相同或更低版本替换为 latest；重建历史时需有意调整 CI 的基数。
 - Release tag 为 `android-<versionCode>`；APK URL 固定到该 tag，不使用可变 latest APK 地址。
@@ -66,7 +66,7 @@ WSL 可以把 `--java` 指向 Android Studio 的 `jbr/bin/java.exe`。
 
 ## 手机更新
 
-在“记忆练习”页面打开“应用更新”，点击“检查更新”。页面展示当前版本、可用版本、
+在“五十音图”页面点击右上角齿轮按钮，进入“设置”后打开“应用更新”，点击“检查更新”。页面展示当前版本、可用版本、
 更新说明和包大小。确认下载后，Android DownloadManager 在后台下载，支持取消；
 网络暂停时由系统重试。退出应用后再次打开更新页会恢复下载状态。
 

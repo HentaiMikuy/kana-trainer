@@ -28,7 +28,8 @@ Web 版已实现的能力在安卓版中全部保留：
 ## 与 Web 版的行为差异
 
 - **导航形态**：Web 版单页并排展示设置与答题区；Android 版按移动端习惯拆分为
-  设置 / 答题 / 速查表 / 错题本四个页面，系统返回键可逐级返回。
+  记忆练习 / 五十音图两个主页面，以及答题 / 速查表 / 错题本 / 设置 / 应用更新等子页面，
+  系统返回键可逐级返回。
 - **字形显示**：Web 版手写体依赖系统字体（Klee One 等）；Android 版手写体使用系统
   衬线字体近似楷书效果，未捆绑字体文件以控制包体积。
 - **遮挡效果**：Web 版用 CSS `blur`；Android 版用低不透明度（12%）呈现，兼容
@@ -102,7 +103,7 @@ android-app/
 │       ├── theme/Theme.kt          # 配色复刻 Web 版 styles.css 设计变量
 │       ├── components/Common.kt    # 统计条、设置控件等共享组件
 │       ├── help/KanaHelpDialog.kt  # 页面说明弹窗
-│       └── screens/                # Settings / Quiz（含学习报告）/ Chart / Weak
+│       └── screens/                # Settings（练习）/ Gojuon / Quiz / Chart / Weak / AppSettings / Update
 └── app/src/test/java/com/konomip/kanatrainer/
     ├── data/                       # KanaDataTest、LearningRecordsTest、RecordJsonTest
     └── logic/                      # AnswerRules、QuizEngine、ReviewWeight、
@@ -126,5 +127,7 @@ UI，由模拟器手工冒烟测试覆盖（安装、答题、判题反馈、错
 
 ## 应用内更新与自动发布
 
-记忆练习页新增“应用更新”入口，支持检查 GitHub Releases、后台下载、校验及系统安装。
+从“五十音图”页面右上角的齿轮按钮进入“设置”，再打开“应用更新”，
+支持检查 GitHub Releases、后台下载、校验及系统安装。返回时依次回到设置和五十音图，
+保留五十音图的显示方式与滚动位置。
 正式签名、GitHub Secrets、版本号策略和首次迁移步骤见 [RELEASE.md](RELEASE.md)。

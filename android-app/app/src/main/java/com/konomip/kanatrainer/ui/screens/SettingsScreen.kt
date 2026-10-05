@@ -277,15 +277,6 @@ fun SettingsScreen(
             }
 
             item {
-                NavCard(
-                    title = "应用更新",
-                    subtitle = "检查新版本 · 下载与安装",
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { viewModel.navigate(com.konomip.kanatrainer.ui.Screen.UPDATE) },
-                )
-            }
-
-            item {
                 ControlGroup(label = "学习数据") {
                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         OutlinedButton(
